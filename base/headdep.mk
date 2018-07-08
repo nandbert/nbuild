@@ -25,15 +25,11 @@
 ifndef _HEADDEP_MK
 _HEADDEP_MK =	true
 
-ifeq ($(origin SDK_ROOT),undefined)
-  $(error error: SDK_ROOT undefined)
+ifeq ($(origin NBUILD),undefined)
+  $(error error: NBUILD undefined)
 endif
 
-#ifneq ($(findstring gcc (GCC) 2.,$(shell $(_HDEP_GCC) --version | head -1)),)
-#  $(error "**** SORRY, this is only supported for gcc >= 3.x ****")
-#endif
-
-include $(SDK_ROOT)/build/nbuild/platform.mk
+include $(NBUILD)/base/platform.mk
 
 
 ##############################################################################
@@ -147,7 +143,7 @@ $(_HDEP_PRE)$(_HDEP_UNIQ)%.h.d $(_HDEP_PRE)%.h.d: %.h
 $(_HDEP_PRE)$(_HDEP_UNIQ)%.mas.d $(_HDEP_PRE)%.mas.d: %.mas
 	$(_HDEP_BEGIN)
 	@$(_HDEP_GCC) -I. $(IMPE_INCS) $(MVA_INCS) $(DPE_INCS) \
-	-I $(SDK_ROOT)/build/nmex -x c \
+	-I $(NBUILD)/bin/nmex -x c \
 	 -M -MT $*.dsr -MT $*.tsr -MT $*.sym -MT $*.log $< > $@.tmp
 	$(_HDEP_END)
 

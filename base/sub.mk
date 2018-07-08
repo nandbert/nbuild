@@ -28,8 +28,12 @@
 ifndef _SUB_MK
 _SUB_MK =	true
 
-include		$(SDK_ROOT)/build/nbuild/platform.mk
-include		$(SDK_ROOT)/build/nbuild/helpers.mk
+ifeq ($(origin NBUILD),undefined)
+  $(error error: NBUILD undefined)
+endif
+
+include $(NBUILD)/base/platform.mk
+include $(NBUILD)/base/helpers.mk
 
 ifdef _TAGS_MK
   $(warning WARNING: sub.mk should be included before tags.mk)
@@ -105,7 +109,7 @@ _SUB_CHK :=	{ [ "$(_SUB_CHKDIRS)" = "" ] || \
 
 purge::
 	rm -f .*.d
-	
+
 cleandepend::
 	rm -f .makefile.d .sub-cache.d
 	make .makefile.d .sub-cache.d
@@ -204,9 +208,6 @@ debugsub:
 #  obsolescent: cvs commands on the whole sub-tree
 ##############################################################################
 
-# keep makesupport up to date
-# SUB_DIRS +=	$(SDK_ROOT)/build/nbuild
-
 cvs:
 	@$(_SUB_CHK)
 	@gawk 'BEGIN{printf("starting $(COLRED)cvs $(CVSCMD)"\
@@ -264,11 +265,11 @@ tagsub: cvs
 
 ifeq ($(NBUILD_COLOR),yes)
 
-_SUB_CS := 	(sed -u "s/^File.*Patch$$/ง[01;35m&ง[00m/;s/^File.*Modified$$/ง[01;34m&ง[00m/;s/^File.*Merge$$/ง[01;31m&ง[00m/;s/^File.*merge$$/ง[01;31m&ง[00m/" | tr "ง" "\033")
+_SUB_CS := 	(sed -u "s/^File.*Patch$$/ยง[01;35m&ยง[00m/;s/^File.*Modified$$/ยง[01;34m&ยง[00m/;s/^File.*Merge$$/ยง[01;31m&ยง[00m/;s/^File.*merge$$/ยง[01;31m&ยง[00m/" | tr "ยง" "\033")
 
-_SUB_CU :=	(sed -u "s/^M .*/ง[01;34m&ง[00m/;s/^P .*/ง[01;35m&ง[00m/;s/^U .*/ง[01;35m&ง[00m/;" | tr "ง" "\033")
+_SUB_CU :=	(sed -u "s/^M .*/ยง[01;34m&ยง[00m/;s/^P .*/ยง[01;35m&ยง[00m/;s/^U .*/ยง[01;35m&ยง[00m/;" | tr "ยง" "\033")
 
-_SUB_CM :=	| (sed -u "s/^\\(make...: Entering directory\\)\\(.*\\)$$/\\1ง[01;38m\2ง[00m/;" | tr "ง" "\033")
+_SUB_CM :=	| (sed -u "s/^\\(make...: Entering directory\\)\\(.*\\)$$/\\1ยง[01;38m\2ยง[00m/;" | tr "ยง" "\033")
 
 else
 
@@ -281,8 +282,6 @@ endif
 # variables used by other make packages
 ##############################################################################
 
-	
-	
 # apply some standard targets on all SUB_MAKES
 purgesub:
 	@$(_SUB_CHK)
@@ -291,7 +290,6 @@ purgesub:
 	  rm -f $$i/.*.d ; \
 	done $(_SUB_CM)
 
-	
 TIDY_WILDS +=	.*.d
 
 endif

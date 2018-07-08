@@ -22,7 +22,12 @@
 ifndef _TAGS_MK
 _TAGS_MK =	true
 
-include		$(SDK_ROOT)/build/nbuild/platform.mk
+ifeq ($(origin NBUILD),undefined)
+  $(error error: NBUILD undefined)
+endif
+
+include $(NBUILD)/base/platform.mk
+
 
 ##############################################################################
 
