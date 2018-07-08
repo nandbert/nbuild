@@ -114,6 +114,8 @@ $(_HDEP_PRE)$(_HDEP_UNIQ)%.S.d $(_HDEP_PRE)%.S.d: ../%.S
 	$(_HDEP_GNUISH)
 
 # .cpp
+$(_HDEP_PRE)$(_HDEP_UNIQ)%.cpp.d $(_HDEP_PRE)%.cpp.d: HDEP_FLAGS+=$(HDEP_CXOPTS)
+
 $(_HDEP_PRE)$(_HDEP_UNIQ)%.cpp.d $(_HDEP_PRE)%.cpp.d: %.cpp
 	$(_HDEP_GNUISH)
 
@@ -121,6 +123,8 @@ $(_HDEP_PRE)$(_HDEP_UNIQ)%.cpp.d $(_HDEP_PRE)%.cpp.d: ../%.cpp
 	$(_HDEP_GNUISH)
 
 # .cc
+$(_HDEP_PRE)$(_HDEP_UNIQ)%.cc.d $(_HDEP_PRE)%.cc.d: HDEP_FLAGS+=$(HDEP_CXOPTS)
+
 $(_HDEP_PRE)$(_HDEP_UNIQ)%.cc.d $(_HDEP_PRE)%.cc.d: %.cc
 	$(_HDEP_GNUISH)
 
