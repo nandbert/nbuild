@@ -31,8 +31,8 @@ _SPACE :=	$(_EMPTY) $(_EMPTY)
 NBMAKEFILE ?=	Makefile
 
 # object dir prefix
-ODP ?=		build-
-ODPL ?=		6
+ODP ?=		o-
+ODPL ?=		2
 
 # remove the last word from a list
 #
