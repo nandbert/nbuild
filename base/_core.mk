@@ -61,8 +61,8 @@
 # check required parameters
 ##############################################################################
 
-ifeq ($(origin TOOLS),undefined)
-  $(error error: TOOLS undefined)
+ifeq ($(origin NBUILD),undefined)
+  $(error error: NBUILD undefined)
 endif
 
 ifeq ($(strip $(&core&_APP) $(&core&_LIB)),)
@@ -105,8 +105,8 @@ endif
 
 ##############################################################################
 
-include		$(TOOLS)/nbuild/helpers.mk
-include		$(TOOLS)/nbuild/platform.mk
+include		$(NBUILD)/base/helpers.mk
+include		$(NBUILD)/base/platform.mk
 
 
 ##############################################################################

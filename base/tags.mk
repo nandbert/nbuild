@@ -22,12 +22,7 @@
 ifndef _TAGS_MK
 _TAGS_MK =	true
 
-ifeq ($(origin NBUILD),undefined)
-  $(error error: NBUILD undefined)
-endif
-
-include $(NBUILD)/base/platform.mk
-
+include		$(NBUILD)/base/platform.mk
 
 ##############################################################################
 

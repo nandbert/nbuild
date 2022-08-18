@@ -20,7 +20,7 @@
 ##############################################################################
 
 
-$(TOOLS)/nbuild/.%.mk: $(TOOLS)/nbuild/_core.mk
+$(NBUILD)/base/.%.mk: $(NBUILD)/base/_core.mk
 	@echo core.mk: generating $@
 	$(NBQ)echo "# don't edit, generated from $(notdir $^)" > $@
 	$(NBQ)sed >> $@ < $^ "s/&core&/$*/g"

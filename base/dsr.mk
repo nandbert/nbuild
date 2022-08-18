@@ -30,8 +30,8 @@
 ifndef _DSR_MK
 _DSR_MK =	true
 
-ifeq ($(origin TOOLS),undefined)
-  $(error error: TOOLS undefined)
+ifeq ($(origin NBUILD),undefined)
+  $(error error: NBUILD undefined)
 endif
 
 
