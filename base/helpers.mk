@@ -1,9 +1,4 @@
 # -*- tab-width: 4 -*-
-##############################################################################
-#
-# Copyright (c) 2014 Freescale Semiconductor;
-#
-##############################################################################
 #
 #  CONTENT
 #    some internal helper functions that are reused by several packages
@@ -17,7 +12,6 @@
 #  LANGUAGE
 #    make
 #
-##############################################################################
 
 ifndef _HELPERS_MK
 _HELPERS_MK =	true

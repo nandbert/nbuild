@@ -1,9 +1,4 @@
 # -*- tab-width: 4 -*-
-##############################################################################
-#
-# Copyright (c) 2014 Freescale Semiconductor;
-#
-##############################################################################
 #
 #  CONTENT
 #    generate a package with core specific names from the common _core
@@ -18,7 +13,6 @@
 #  LANGUAGE
 #    make
 #
-##############################################################################
 
 
 $(NBUILD)/base/.%.mk: $(NBUILD)/base/_core.mk

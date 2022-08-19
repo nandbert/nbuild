@@ -1,9 +1,4 @@
 # -*- tab-width: 4 -*-
-##############################################################################
-#
-# Copyright (c) 2014 Freescale Semiconductor;
-#
-##############################################################################
 #
 #  CONTENT
 #    centralize treatment of some platform dependent stuff
@@ -17,7 +12,6 @@
 #  LANGUAGE
 #    make
 #
-##############################################################################
 
 ifndef _PLATFORM_MK
 _PLATFORM_MK =	true

@@ -1,9 +1,4 @@
 # -*- tab-width: 4 -*-
-##############################################################################
-#
-# Copyright (c) 2014 Freescale Semiconductor;
-#
-##############################################################################
 #
 #  CONTENT
 #    optional make package for recursive makes in projects that involve many
@@ -24,7 +19,6 @@
 #  LANGUAGE
 #    make
 #
-##############################################################################
 
 ifndef _SUB_MK
 _SUB_MK =	true

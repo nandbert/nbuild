@@ -1,9 +1,4 @@
 # -*- tab-width: 4 -*-
-##############################################################################
-#
-# Copyright (c) 2014 Freescale Semiconductor;
-#
-##############################################################################
 #
 #  CONTENT
 #    automatic generation of dependencies that stem from #include directives.
@@ -21,7 +16,6 @@
 #  LANGUAGE
 #    make
 #
-##############################################################################
 
 ifndef _HEADDEP_MK
 _HEADDEP_MK =	true

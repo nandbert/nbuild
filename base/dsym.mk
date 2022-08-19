@@ -1,9 +1,4 @@
 # -*- tab-width: 4 -*-
-##############################################################################
-#
-# Copyright (c) 2014 Freescale Semiconductor;
-#
-##############################################################################
 #
 #  CONTENT
 #    make package to create symbol files from C headers containing #defines 
@@ -27,7 +22,6 @@
 #  LANGUAGE
 #    make
 #
-##############################################################################
 
 ifndef _DSYM_MK
 _DSYM_MK =	true

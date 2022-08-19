@@ -1,9 +1,4 @@
 # -*- tab-width: 4 -*-
-##############################################################################
-#
-# Copyright (c) 2014 Freescale Semiconductor;
-#
-##############################################################################
 #
 #  CONTENT
 #    incrementally generate TAGS files. MUST be included after other packages
@@ -18,7 +13,6 @@
 #  LANGUAGE
 #    make
 #
-##############################################################################
 
 ifndef _TAGS_MK
 _TAGS_MK =	true
