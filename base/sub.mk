@@ -1,3 +1,4 @@
+# -*- tab-width: 4 -*-
 ##############################################################################
 #
 # Copyright (c) 2014 Freescale Semiconductor;
@@ -12,7 +13,7 @@
 #  PARAMETERS
 #    SUB_MAKES	directories to go and call make. add more with +=
 #    SUB_DIRS	directories inolved, but without make (e.g. include dirs).
-#		add more with +=
+#				add more with +=
 #
 #  AUTHOR
 #    Norbert Stoeffler

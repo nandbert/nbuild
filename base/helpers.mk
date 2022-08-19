@@ -1,3 +1,4 @@
+# -*- tab-width: 4 -*-
 ##############################################################################
 #
 # Copyright (c) 2014 Freescale Semiconductor;
@@ -42,7 +43,7 @@ cutlast =	$(wordlist 1,$(words $(wordlist 2,$(words $(1)),$(1))),$(1))
 # any o-* elements in the path
 #
 incdir =	$(subst $(_SPACE),,$(call cutlast,$(call cutlast,\
-		$(patsubst /$(ODP)%,,$(subst /, /,$(dir $(1)))))))
+			$(patsubst /$(ODP)%,,$(subst /, /,$(dir $(1)))))))
 
 # remove the o- part of a path
 #
@@ -51,10 +52,10 @@ cutodir =	$(subst $(_SPACE),,$(patsubst /$(ODP)%,,$(subst /, /,$(1))))
 # make names of .o files from supported suffices
 #
 _src2obj =	$(strip $(foreach suf, s S c cpp cc C cl,\
-		$(patsubst %.$(suf),%-$(suf).o,$(filter %.$(suf),$(1)))))
+			$(patsubst %.$(suf),%-$(suf).o,$(filter %.$(suf),$(1)))))
 
 _src2obj2 =	$(strip $(foreach suf, s S c cpp cc C cl,\
-		$(patsubst %.$(suf),%-$(suf).obj,$(filter %.$(suf),$(1)))))
+			$(patsubst %.$(suf),%-$(suf).obj,$(filter %.$(suf),$(1)))))
 
 # remove duplicates starting from the right (for libs)
 #
@@ -80,7 +81,7 @@ nsubuniq =	$(shell echo $(1) | awk '{ \
 #
 NPATH2REL =	awk -vwd=`/bin/pwd` -F/ 'BEGIN{ \
 		  $$0=wd;for(f=2;f<=NF;f++) c[f]=$$f \
-		}{ \
+			}{ \
 		  if(NF>1 && $$1!=".."){ \
 		    printf("%s",$$1); \
 		    for(f=2;f<=NF&&c[f]==$$f;f++); \
@@ -180,7 +181,7 @@ NBTOP =		$(shell while [ ! -d tools ] && [ `pwd` != /home ] ; \
 
 %-C.o: ../%.C
 	$(COMPILE.cpp) $(OUTPUT_OPTION) $< $(ERRORFILT)
-	
+
 %-cl.o: %.cl
 	$(COMPILE.cpp) $(OUTPUT_OPTION) $< $(ERRORFILT)
 

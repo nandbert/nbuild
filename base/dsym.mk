@@ -1,3 +1,4 @@
+# -*- tab-width: 4 -*-
 ##############################################################################
 #
 # Copyright (c) 2014 Freescale Semiconductor;
@@ -9,10 +10,10 @@
 #    of peripheral addresses
 #
 #  PARAMETERS
-#    DSYM	      	name of the symbol file to generate
-#    DSYM_HEADERS 	headerfiles to be used
+#    DSYM	      		name of the symbol file to generate
+#    DSYM_HEADERS 		headerfiles to be used
 #
-#    DYM_FILTER		optional command to preselect symbols (i.e. grep -v)
+#    DYM_FILTER			optional command to preselect symbols (i.e. grep -v)
 #
 #    DSYM[1234]	      	optional other symbol files
 #    DSYM[1234]_HEADERS optional other headers

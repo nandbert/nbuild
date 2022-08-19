@@ -1,3 +1,4 @@
+# -*- tab-width: 4 -*-
 ##############################################################################
 #
 # Copyright (c) 2014 Freescale Semiconductor;
@@ -128,7 +129,7 @@ ifeq ($(shell [ -f $(dir $(IMPE_ASM))/Makefile ] && echo true),true)
 SUB_MAKES +=	$(dir $(IMPE_ASM))
 endif
 endif
-SUB_DIRS +=	$(subst -I,,$(DSR_INCS)) $(TOOLS)/nmex
+SUB_DIRS +=		$(subst -I,,$(DSR_INCS)) $(TOOLS)/nmex
 
 
 ##############################################################################

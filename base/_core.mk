@@ -1,3 +1,4 @@
+# -*- tab-width: 4 -*-
 ##############################################################################
 #
 # Copyright (c) 2014 Freescale Semiconductor;
@@ -9,41 +10,41 @@
 #    typically included by a core and compiler specific make package
 #
 #  PARAMETERS
-#    &core&_APP	   	name of the application to generate
+#    &core&_APP	   		name of the application to generate
 #    &core&_APP_SRCS	source files of the application
 #    &core&_APP_LIBS    full paths of libraries linked to the application
 #
-#    &core&_LIB	   	name of the library to generate (instead or in
-#			addition to the app
+#    &core&_LIB	   		name of the library to generate (instead or in
+#						addition to the app
 #    &core&_LIB_SRCS	source files of the library
 #    &core&_LIB_LIBS    full paths of libraries required by the libs
 #
 #
 #    &core&_INCS      	include paths (beside of the paths of sub-libs), used
-#			also in header dependency generation
+#						also in header dependency generation
 #    &core&_DEFS      	defines (used also in header dependency generation
 #
 #    &core&_LDSCRIPT  	linker script (including switch -xxx if required)
 #
-#    &core&_CCOPTS	additional compiler options (C and C++)
-#    &core&_CXOPTS	additional compiler options (C++ only)
-#    &core&_ASOPTS	additional assembler options
+#    &core&_CCOPTS		additional compiler options (C and C++)
+#    &core&_CXOPTS		additional compiler options (C++ only)
+#    &core&_ASOPTS		additional assembler options
 #    &core&_LDOPTS   	additional linker options
 #
 #
-#    &core&_CC		C compiler
-#    &core&_CX		C++ compiler
-#    &core&_AS		assembler
-#    &core&_LD		linker
-#    &core&_AR		archiver
+#    &core&_CC			C compiler
+#    &core&_CX			C++ compiler
+#    &core&_AS			assembler
+#    &core&_LD			linker
+#    &core&_AR			archiver
 #
-#    &core&_PROMPT	nice string that starts short messages
+#    &core&_PROMPT		nice string that starts short messages
 #
-#    &core&_OD		optional, default is objdump
-#    &core&_OC		optional, default is objcopy
-#    &core&_NM		optional, default is nm
+#    &core&_OD			optional, default is objdump
+#    &core&_OC			optional, default is objcopy
+#    &core&_NM			optional, default is nm
 #
-#    &core&_SRSECS	sections to be extracted when generating an srecord
+#    &core&_SRSECS		sections to be extracted when generating an srecord
 #			file
 #  AUTHOR
 #    Norbert Stoeffler
@@ -97,9 +98,9 @@ endif
 &core&_OD ?=		objdump
 &core&_OC ?=		objcopy
 &core&_NM ?=		nm
-&core&_CCOO ?=	-o $@
-&core&_LDOO ?=	-o $@
-&core&_AROO ?=	$@
+&core&_CCOO ?=		-o $@
+&core&_LDOO ?=		-o $@
+&core&_AROO ?=		$@
 &core&_SRSECS ?=	.text .data .rodata
 
 
@@ -207,7 +208,7 @@ ifneq ($(basename $(&core&_APP)),)
 
 _&core&_APP_OBJS =	$(call _src2obj,$(&core&_APP_SRCS))
 
-_&core&_APP =	$(basename $(&core&_APP))
+_&core&_APP =		$(basename $(&core&_APP))
 
 $(&core&_APP): $(_&core&_APP_OBJS) $(__&core&_APP_LDLIBS)
 ifeq ($(V),0)
@@ -384,7 +385,7 @@ SUB_DIRS +=	$(subst -I,,$(&core&_INCS))
 
 # directories of outlying source file
 SUB_DIRS +=	$(sort $(foreach d,$(filter ../%,\
-		$(&core&_APP_SRCS) $(&core&_LIB_SRCS)),$(dir $d)))
+			$(&core&_APP_SRCS) $(&core&_LIB_SRCS)),$(dir $d)))
 
 # sources for header dependencies
 HDEP_SRCS += 	$(filter-out %.s,$(&core&_APP_SRCS) $(&core&_LIB_SRCS))

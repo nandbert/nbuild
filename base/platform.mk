@@ -1,3 +1,4 @@
+# -*- tab-width: 4 -*-
 ##############################################################################
 #
 # Copyright (c) 2014 Freescale Semiconductor;
@@ -21,7 +22,7 @@
 ifndef _PLATFORM_MK
 _PLATFORM_MK =	true
 
-SHELL = /bin/bash
+SHELL = 		/bin/bash
 
 ##############################################################################
 # determine platform and give it a simple name
