@@ -11,8 +11,8 @@
 #  LANGUAGE
 #    make
 #
-NBUILD =		../../..
+NBUILD =	../../..
 
-GNU_LIB =		libmulti.a
-GNU_LIB_SRCS =	foo.c
+LIB =		libmulti.a
+LIB_SRCS =	foo.c
 

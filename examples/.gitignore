@@ -3,4 +3,5 @@
 *.elf
 .*.d
 .*.t
+.sub.el
 TAGS

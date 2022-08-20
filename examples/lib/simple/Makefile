@@ -11,13 +11,13 @@
 #  LANGUAGE
 #    make
 #
-NBUILD =		../../..
+NBUILD =	../../..
 
-GNU_LIB =		libsimple.a
-GNU_LIB_SRCS =	foo.c
+LIB =		libsimple.a
+LIB_SRCS =	foo.c
 
 all::
 
 clean::
 
-include         $(NBUILD)/class/linux.mk
+include		$(NBUILD)/class/linux.mk

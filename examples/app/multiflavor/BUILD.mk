@@ -1,30 +1,28 @@
+# -*- tab-width: 4 -*-
 #
 #  CONTENT
-#    
+#    example how to build the objects in several "flavors" from the same set of sources
+#	 (currently only o-linux
 #
 #  AUTHOR
-#    Norbert
+#    Norbert Stoeffler
 #
 #  DATE
-#    2016-03-10
+#    2022-08-19
 #
 #  LANGUAGE
 #    make
 #
-NBUILD =		../../..
+NBUILD =	../../..
 
-GNU_APP =		hello.elf
-GNU_APP_SRCS =	hello.c
+APP =		hello.elf
+APP_SRCS =	hello.c
 
-GNU_APP_LIBS =	../../../lib/multiflavor/$(O-DIR)/libmulti.a
-
+APP_LIBS =	../../../lib/multiflavor/$(O-DIR)/libmulti.a
 
 all::
 
 clean::
-
-run: allsub
-	./$(GNU_APP)
 
 # NOTE:
 # - the BUILD.mk besides the sources replaces the Makefile
