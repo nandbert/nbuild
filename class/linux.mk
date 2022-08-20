@@ -12,7 +12,7 @@
 #  LANGUAGE
 #    make
 #
-include 		$(NBUILD)/base/platform.mk
+include $(NBUILD)/base/platform.mk
 
 GNU_CC ?=		$(GCC_PREFIX)gcc -c
 GNU_CX ?=		$(GCC_PREFIX)g++ -c
@@ -21,27 +21,38 @@ GNU_LD ?=		$(GCC_PREFIX)gcc
 GNU_AR ?=		$(GCC_PREFIX)ar rcs
 GNU_PROMPT ?=	gcc/linux
 
-_GNU_CCOPTS +=	-Wall -Wno-unused -Wno-parentheses -Wno-sign-compare -Wno-format
-GNU_CCOPTS :=	$(_CCOPTS) $(CCOPTS)
+_CCOPTS +=		-Wall -Wno-unused -Wno-parentheses -Wno-sign-compare -Wno-format
+CCOPTS :=		$(_CCOPTS) $(CCOPTS)
 
 ifeq ($(LENIENT),)
-GNU_CPOPTS +=	-Werror=strict-prototypes -Werror-implicit-function-declaration
+CPOPTS +=		-Werror=strict-prototypes -Werror-implicit-function-declaration
 endif
-GNU_CPOPTS :=	$(_CPOPTS) $(CPOPTS)
+CPOPTS :=		$(_CPOPTS) $(CPOPTS)
 
-GNU_CXOPTS +=
-GNU_ASOPTS +=
+CXOPTS +=
+ASOPTS +=
 
-GNU_LDOPTS +=	-lm -lstdc++
+LDOPTS +=		-lm -lstdc++
 
-include			$(NBUILD)/base/core.mk
-include			$(NBUILD)/base/.GNU.mk
-include			$(NBUILD)/base/sub.mk
-include			$(NBUILD)/base/headdep.mk
+include $(NBUILD)/base/usage.mk
+include $(NBUILD)/base/single.mk
+include $(NBUILD)/base/sub.mk
+include $(NBUILD)/base/headdep.mk
 
 # app specific
-ifneq ($(GNU_APP),) 
-include			$(NBUILD)/base/tags.mk
+ifneq ($(APP),) 
+include $(NBUILD)/base/tags.mk
 
+# desktop, i.e. not using the board package
+ifndef _BOARD_MK 
+
+run:	allsub
+	cd ..; $(notdir $(shell pwd))/$(_GNU_ELF) $(CMDL)
+
+file::
+	@echo -e \
+	'run:\tallsub\n\tcd ..; $(notdir $(shell pwd))/$(_GNU_ELF) $$(CMDL)\n\n'
+
+endif # /desktop
 endif # /app
 
