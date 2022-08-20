@@ -44,10 +44,15 @@ ifneq ($(APP),)
 include $(NBUILD)/base/tags.mk
 
 # desktop, i.e. not using the board package
-ifndef _BOARD_MK 
+ifndef _BOARD_MK
 
+ifdef O-DIR
 run:	allsub
 	cd ..; $(notdir $(shell pwd))/$(_GNU_ELF) $(CMDL)
+else
+run:	allsub
+	./$(_GNU_ELF) $(CMDL)
+endif
 
 file::
 	@echo -e \

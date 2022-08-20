@@ -243,7 +243,7 @@ _&core&_APP_CLEAN =	$(_&core&_ELF) $(_&core&_APP_OBJS) \
 
 all::	$(_&core&_ELF)
 
-clean_app:
+clean_app::
 	rm -f $(strip $(_&core&_APP_CLEAN))
 
 clean:: clean_app
@@ -272,7 +272,7 @@ $(&core&_LIB): $(_&core&_LIB_OBJS)
 
 all::	$(&core&_LIB)
 
-clean_lib:
+clean_lib::
 	rm -f $(strip $(&core&_LIB) $(_&core&_LIB_OBJS))
 
 clean:: clean_lib
