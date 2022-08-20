@@ -24,6 +24,10 @@ ifeq ($(origin NBUILD),undefined)
   $(error error: NBUILD undefined)
 endif
 
+#ifneq ($(findstring gcc (GCC) 2.,$(shell $(_HDEP_GCC) --version | head -1)),)
+#  $(error "**** SORRY, this is only supported for gcc >= 3.x ****")
+#endif
+
 include $(NBUILD)/base/platform.mk
 
 
@@ -42,6 +46,9 @@ HEADDEP ?=	$(H)
 _HDEP_PRE =	.
 _HDEP_GCC =	gcc
 
+HDEP_SRCS :=	$(filter-out %-cda.c %-cdt.c %-cdc.c,$(HDEP_SRCS))
+
+#$(info ***** $(HDEP_SRCS))
 
 ##############################################################################
 # all the little dependency makefiles that we include
@@ -71,24 +78,22 @@ _HDEP_DHASH :=
 _HDEP_UNIQ :=	$(shell /bin/pwd | md5sum | head -c 6)_
 
 # print a nice, reassuring message
-_HDEP_BEGIN =	@echo headdep.mk: updating $@
+_HDEP_BEGIN =	@[ -f $@ ] || echo headdep.mk: creating $@; [ -d $(dir $@) ] || mkdir -p $(dir $@)
 
 define _HDEP_END
 	@if [ -s $@.tmp ] ; then \
 	  sed < $@.tmp 's|^\(.*\):|\1 $@:|' > $@ ;\
 	  echo "#### dont care rules" >> $@ ; \
-	  sed -e 's/^[^:]*: *//;/^[[:blank:]\\]*$$/ d;s/^.*[^\]$$/&:/g' \
+	  sed -e 's/^[^:]*: *//;/^[[:blank:]\\]*$$/ d;s/^[^\]*$$/&:/g' \
 	    < $@.tmp >> $@; \
 	  rm $@.tmp ; \
 	else rm $@ $@.tmp ; fi
 endef
-#	  sed -e 's/^[^:]*: *//;/^[[:blank:]\\]*$$/ d;s/^.*[^\]$$/&:/g' \
-#	  sed -e 's/^[^:]*: *//;/^[[:blank:]\\]*$$/ d;s/^[^\]*$$/&:/g' \
 
 define _HDEP_GNUISH
 	$(_HDEP_BEGIN)
 	$(NBQ)$(_HDEP_GCC) $(HDEP_FLAGS) -MM -MG -MT \
-		$*-$(subst .,,$(suffix $<)).o $< > $@.tmp
+		$*$(OBJ_SEP)$(subst .,,$(suffix $<)).o $< > $@.tmp
 	$(_HDEP_END)
 endef
 
@@ -109,8 +114,6 @@ $(_HDEP_PRE)$(_HDEP_UNIQ)%.S.d $(_HDEP_PRE)%.S.d: ../%.S
 	$(_HDEP_GNUISH)
 
 # .cpp
-$(_HDEP_PRE)$(_HDEP_UNIQ)%.cpp.d $(_HDEP_PRE)%.cpp.d: HDEP_FLAGS+=$(HDEP_CXOPTS)
-
 $(_HDEP_PRE)$(_HDEP_UNIQ)%.cpp.d $(_HDEP_PRE)%.cpp.d: %.cpp
 	$(_HDEP_GNUISH)
 
@@ -118,8 +121,6 @@ $(_HDEP_PRE)$(_HDEP_UNIQ)%.cpp.d $(_HDEP_PRE)%.cpp.d: ../%.cpp
 	$(_HDEP_GNUISH)
 
 # .cc
-$(_HDEP_PRE)$(_HDEP_UNIQ)%.cc.d $(_HDEP_PRE)%.cc.d: HDEP_FLAGS+=$(HDEP_CXOPTS)
-
 $(_HDEP_PRE)$(_HDEP_UNIQ)%.cc.d $(_HDEP_PRE)%.cc.d: %.cc
 	$(_HDEP_GNUISH)
 
@@ -128,6 +129,17 @@ $(_HDEP_PRE)$(_HDEP_UNIQ)%.cc.d $(_HDEP_PRE)%.cc.d: ../%.cc
 
 # .mc: c with nmex macros
 $(_HDEP_PRE)$(_HDEP_UNIQ)%.mc.d $(_HDEP_PRE)%.mc.d: %.mc
+	$(_HDEP_BEGIN)
+	$(_HDEP_GCC) $(HDEP_FLAGS) -x c -MM -MG -MT $*.o $< > $@.tmp
+	$(_HDEP_END)
+
+# .ms: assembly with nmex macros
+$(_HDEP_PRE)$(_HDEP_UNIQ)%.ms.d $(_HDEP_PRE)%.ms.d: %.ms
+	$(_HDEP_BEGIN)
+	$(_HDEP_GCC) $(HDEP_FLAGS) -x c -MM -MG -MT $*.o $< > $@.tmp
+	$(_HDEP_END)
+
+$(_HDEP_PRE)$(_HDEP_UNIQ)%.ms.d $(_HDEP_PRE)%.ms.d: ../%.ms
 	$(_HDEP_BEGIN)
 	$(_HDEP_GCC) $(HDEP_FLAGS) -x c -MM -MG -MT $*.o $< > $@.tmp
 	$(_HDEP_END)
@@ -142,7 +154,7 @@ $(_HDEP_PRE)$(_HDEP_UNIQ)%.h.d $(_HDEP_PRE)%.h.d: %.h
 $(_HDEP_PRE)$(_HDEP_UNIQ)%.mas.d $(_HDEP_PRE)%.mas.d: %.mas
 	$(_HDEP_BEGIN)
 	@$(_HDEP_GCC) -I. $(IMPE_INCS) $(MVA_INCS) $(DPE_INCS) \
-	-I $(NBUILD)/bin/nmex -x c \
+	-I $(TOOLS)/nmex -x c \
 	 -M -MT $*.dsr -MT $*.tsr -MT $*.sym -MT $*.log $< > $@.tmp
 	$(_HDEP_END)
 
@@ -164,11 +176,14 @@ endif
 # now include the dependencies
 ##############################################################################
 
-HDEP_SKIP +=	clean depend purge purgesub
-
-ifeq ($(findstring $(MAKECMDGOALS),$(HDEP_SKIP)),)
+ifeq ($(findstring clean,$(MAKECMDGOALS)),)
+ifeq ($(findstring depend,$(MAKECMDGOALS)),)
 ifneq ($(HEADDEP),0)
+ifeq ($V,2)
+$(info *** include $(_HDEP_INC))
+endif
 include $(_HDEP_INC)
+endif
 endif
 endif
 
@@ -187,5 +202,14 @@ depend::
 	make cleandepend $(_HDEP_INC) HEADDEP=0
 
 TIDY_WILDS +=	.*.d
+
+##############################################################################
+# generate standalone makefile
+##############################################################################
+
+file::
+	@echo -e "### dependencies on headers\n\n"
+	@cat $(_HDEP_INC)
+	@echo -e "\n"
 
 endif

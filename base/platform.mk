@@ -17,56 +17,53 @@ ifndef _PLATFORM_MK
 _PLATFORM_MK =	true
 
 SHELL = 		/bin/bash
+MAKEFLAGS += 	--no-builtin-rules
+.DEFAULT_GOAL =	all
+
+NBTL ?=			1
+
+override LANG =	C
+export LANG
+
+.SUFFIXES:
+
+##############################################################################
+# user config
+##############################################################################
+
+-include $(NBUILD)/../nbuild.config
 
 ##############################################################################
 # determine platform and give it a simple name
 ##############################################################################
 
-SYS := $(shell echo $$OSTYPE)
-BITS := $(shell arch)
-HNAME := $(shell echo $$HOSTNAME)
-
-ifeq ($(SYS),)
+ifeq ($(OSTYPE),)
   NBUILD_PLATFORM :=	linux
 else
-ifneq ($(findstring solaris,$(SYS)),)
+ifneq ($(findstring solaris,$(OSTYPE)),)
   NBUILD_PLATFORM := 	solaris
 else
-ifneq ($(findstring linux,$(SYS)),)
+ifneq ($(findstring linux,$(OSTYPE)),)
   NBUILD_PLATFORM :=	linux
 else
-ifneq ($(findstring INTEGRITY,$(SYS)),)
-  NBUILD_PLATFORM :=	integrity
-else
-  NBUILD_PLATFORM :=	cygwin
-endif
+  NBUILD_PLATFORM :=	windows
 endif
 endif
 endif
 
 # bitwidth of the (linux) system
-ifeq ($(BITS),x86_64)
+HOSTTYPE:=$(shell uname -m)
+ifeq ($(HOSTTYPE),x86_64)
   NBUILD_PLATBITS =	64
 else
   NBUILD_PLATBITS =	32
 endif
 
-# some explicit hosts in MUC
-ifneq ($(findstring -zwg18,$(HNAME)),)
-  NBUILD_PLATFORM :=	linux
-  NBUILD_COLOR ?=	no
-endif
-ifneq ($(findstring ammer,$(HNAME)),)
-  NBUILD_PLATFORM :=	linux
-endif
-
-export NBUILD_PLATFORM
-export NBUILD_PLATBITS
+all::
 
 debugplat:
-	@echo OSTYPE = $(SYS)
-	@echo HOSTNAME = $(HNAME)
-	@echo HOSTTYPE = $(BITS)
+	@echo OSTYPE = $(OSTYPE)
+	@echo HOSTNAME = $(HOSTNAME)
 	@echo NBUILD_PLATFORM = $(NBUILD_PLATFORM)
 	@echo NBUILD_PLATBITS = $(NBUILD_PLATBITS)
 
@@ -94,7 +91,7 @@ endif
 #   patch :=	gpatch
 # endif
 
-ifeq ($(NBUILD_PLATFORM),cygwin)
+ifeq ($(NBUILD_PLATFORM),windows)
 NBUILD_COLOR ?= 	yes
 endif
 
@@ -106,10 +103,8 @@ endif
 #   $(error error: wrong version of tool "patch")
 # endif
 
-ifeq ($(findstring GNU Awk 4,$(shell gawk --version | head -1)),)
-  ifeq ($(findstring GNU Awk 3,$(shell gawk --version | head -1)),)
-    $(error error: wrong version of tool "gawk")
-  endif
+ifneq ($(findstring GNU Awk 2,$(shell gawk --version | head -1)),)
+  $(error error: wrong version of tool "gawk")
 endif
 
 ifeq ($(NBUILD_PLATBITS),64)
@@ -131,7 +126,7 @@ ifeq ($(EMACS),t)
 NBUILD_COLOR := no
 endif
 
-ifeq ($(NBUILD_PLATFORM),cygwin)
+ifeq ($(NBUILD_PLATFORM),windows)
 ifeq ($(findstring bash,$(BASH)),)
 NBUILD_COLOR := no
 endif
@@ -155,7 +150,7 @@ debugcolor:
 # executable file name extension
 ##############################################################################
 
-ifeq ($(NBUILD_PLATFORM),cygwin)
+ifeq ($(NBUILD_PLATFORM),windows)
 EXE_EXT = .exe
 endif
 
@@ -178,5 +173,20 @@ endif
 ##############################################################################
 
 NBUILD_TL ?=	1
+
+##############################################################################
+# for exports
+##############################################################################
+
+safile: MAKEFLAGS +=	--no-print-directory
+
+safile:
+ifeq ($(NBTL),1)
+	make showlibs
+else
+	make clean
+endif
+	make file | grep -v ^make[[] > .Makefile
+	mv .Makefile Makefile
 
 endif

@@ -1,7 +1,7 @@
 # -*- tab-width: 4 -*-
 #
 #  CONTENT
-#    incrementally generate TAGS files. MUST be included after other packages
+#    incrementally generate TAGS files. DASSERT be included after other packages
 #    or it will not find all subdirectories
 #
 #  AUTHOR
@@ -30,22 +30,18 @@ _TAGDIRS := 	$(sort $(foreach d, $(_SUB_ALLDIRS),\
 		$(call cutodir,$(shell pwd)))
 _TAGSRCS := 	$(filter-out %_sym.h, \
 		$(sort $(foreach d,$(_TAGDIRS), \
-		$(foreach s,c h mas S C mac cpp hpp,$(wildcard $d/*.$s)))))
+		$(foreach s,c h mas S C mac cpp hpp,$(wildcard $d/*.$s) $(wildcard $d/*/*.$s)))))
 _TAGFILES :=	$(foreach i,$(_TAGSRCS),$(dir $i).$(notdir $i).t)
 endif
 
-ifneq ($(NBUILD_PLATFORM),cygwin)
 TAGS: $(_TAGFILES)
 	@echo updating: TAGS
 	$(NBQ)rm -f $@; for i in $(_TAGDIRS) ; do \
 	[ `echo $$i/.*.t | cut -f 1 -d " "` != "$$i/.*.t" ] && \
 	cat $$i/.*.t >> $@ || true ; done
 
-#	overflows in the openvg conformance test suite
+#	overflows the command line
 #	$(NBQ)cat > $@ $^ /dev/null
-else
-TAGS:
-endif
 
 tags: TAGS
 
@@ -54,7 +50,7 @@ cleantags:
 	$(NBQ)rm -f TAGS ;\
 	for i in $(_TAGDIRS) ; do rm -f $$i/.*.t ; done
 
-#	overflows in the openvg conformance test suite
+#	overflows the commandline
 #	@rm -f $(_TAGFILES) TAGS
 
 debugtags:

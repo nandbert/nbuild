@@ -23,10 +23,6 @@
 ifndef _SUB_MK
 _SUB_MK =	true
 
-ifeq ($(origin NBUILD),undefined)
-  $(error error: NBUILD undefined)
-endif
-
 include $(NBUILD)/base/platform.mk
 include $(NBUILD)/base/helpers.mk
 
@@ -53,28 +49,46 @@ __SUB_DIRS =	$(shell for i in $(filter-out /usr/%,\
 		"__SUB_ALLMAKES += $(__SUB_MAKES)" \
 		"__SUB_ALLDIRS += $(__SUB_DIRS)"
 
-ifneq ($(MAKECMDGOALS),purge)
-ifneq ($(MAKECMDGOALS),clean)
-ifneq ($(MAKECMDGOALS),depend)
+#ifeq ($(findstring clean,$(MAKECMDGOALS)),)
+ifeq ($(findstring depend,$(MAKECMDGOALS)),)
+
+ifeq ($V,2)
+$(info *** include .sub-cache.d)
 endif
+include .sub-cache.d
 
 _SUB_ALLMAKES := 	$(call nsubuniq,$(filter-out $(shell /bin/pwd), \
-			$(__SUB_ALLMAKES) $(__SUB_MAKES)))
+					$(__SUB_ALLMAKES) $(__SUB_MAKES)))
 
 _SUB_ALLDIRS := 	$(sort $(__SUB_ALLDIRS) \
-			$(foreach d,$(__SUB_ALLMAKES),$(call cutodir,$d)))
+					$(foreach d,$(__SUB_ALLMAKES),$(call cutodir,$d)))
 
+.sub-cache.d: $(sort $(addsuffix /.sub-cache.d,$(_SUB_ALLMAKES))) .makefile.d
+	@printf "sub.mk: collecting: "`pwd`"/$@\n"
+	$(NBQ)cat $^ /dev/null > $@
+	$(NBQ)echo $(addprefix $(shell pwd)/,.sub-cache.d: $(NBMAKEFILE)) \
+	$(sort $(addsuffix /.sub-cache.d,$(_SUB_ALLMAKES))) >> $@
+	@echo >> $@
 
 %/.sub-cache.d:
 	@make -C $(dir $@) .makefile.d $(notdir $@) || \
 	{ echo sub.mk: faking $@ "(dont worry)" ; echo > $@; }
 
+ifeq ($(findstring debug,$(MAKECMDGOALS)),)
+
 $(addprefix %/,$(NBMAKEFILE)):
-	@echo `pwd`/$(firstword $(NBMAKEFILE)):0: "***" \
-	there is no usable $(notdir $@) in \
-	$(dir $@) "(sub.mk)" | tr -s / ; exit 1
+#	@echo `pwd`/$(firstword $(NBMAKEFILE)):0:
+#	@for m in $(NBMAKEFILE) ; do echo `pwd`/$$m:0: ; done
+	@echo "*** detected by nbuild/sub.mk:"
+	@echo "*** there is no usable $(notdir $@) in $(dir $@)" | tr -s /
+	@echo "*** check the dependencies of all sub projects"
+	@for i in `pwd` $(_SUB_ALLMAKES); do for m in $(NBMAKEFILE) ; do echo $$i/$$m:0: ; done ; done
+	@echo "*** then execute 'make depend'"
+	@exit 1
+
 endif
 endif
+#endif
 
 ##############################################################################
 #  check, if all sub directories exist ...
@@ -89,8 +103,9 @@ _SUB_CHKDIRS :=	$(strip $(shell for i in $(SUB_DIRS) ; \
 		  } \
                 } ; done) \
 		$(shell for i in $(SUB_MAKES) ; \
-		do [ -d $$i ] || { echo $$i ; \
+		do [ -d $$i ] || { echo $$i:0: ; \
 		  echo 1>&2 SUB_MAKE $$i is missing; } ; done))
+
 _SUB_CHK :=	{ [ "$(_SUB_CHKDIRS)" = "" ] || \
 		{ echo $(_SUB_CHKDIRS) missing ... stop ; exit 1; } }
 
@@ -100,14 +115,13 @@ _SUB_CHK :=	{ [ "$(_SUB_CHKDIRS)" = "" ] || \
 ##############################################################################
 
 .PHONY:	sub allsub cleansub emacspath showsub debugsub cleandepend \
-	cvs update upcheck purge
+	cvs update upcheck
 
-purge::
-	rm -f .*.d
-
-cleandepend::
+_cleandepend:
 	rm -f .makefile.d .sub-cache.d
-	make .makefile.d .sub-cache.d
+
+cleandepend:: _cleandepend
+	make .makefile.d
 
 # override to avoid recursion
 SUB_CD ?=	.
@@ -115,37 +129,82 @@ SUB_CD ?=	.
 # needed for grep Nothing to be done"
 LANG = en_US
 
+#_SUBHD = print "in: " $$0; 
+
+ifeq ($(V),0)
+	_SUBH=| awk '{$(_SUBHD) if($$0~"Entering directory") ol=$$0; else if($$0!~"Leaving directory" && $$0!~"Nothing to be done"){if(ol!="") print ol; print; ol="";} fflush(); }' 
+else
+	_SUBV=echo sub: checking $$i for target ${@:sub=};
+endif
+
+
 # apply some standard targets on all SUB_MAKES
 sub allsub cleansub tidysub showtidysub:
 	@$(_SUB_CHK)
 	@for i in $(_SUB_ALLMAKES) $(SUB_CD) ; do \
 	  if [ -f $$i/$(firstword $(NBMAKEFILE)) ] ; then \
-	    make -nC $$i ${@:sub=} 2>&1 | \
-	      grep -q "^make.*: Nothing to be done" || \
-              make -C $$i ${@:sub=} || { kill $$$$; exit 1; } \
-          else \
-	    printf "make[-]: skipping directory $(COLBLK)$$i$(COLNIL)\n" ; fi \
+              make -C $$i ${@:sub=} 2>&1 $(_SUBH) ; \
+			  [ $${PIPESTATUS} = 0 ] || { kill $$$$; exit 1; }\
+      else \
+	       printf "make[-]: skipping directory $(COLBLK)$$i$(COLNIL)\n" ; fi \
 	done $(_SUB_CM)
 
-# apply depend targets on all SUB_MAKES that use headdep.mk
+#
+
+# apply some standard targets on all SUB_MAKES, old version hiding headdeps
+#sub allsub cleansub tidysub showtidysub:
+#	@$(_SUB_CHK)
+#	@for i in $(_SUB_ALLMAKES) $(SUB_CD) ; do \
+#	  if [ -f $$i/$(firstword $(NBMAKEFILE)) ] ; then \
+#	    $(_SUBV) make -nC $$i ${@:sub=} 2>&1 | \
+#	      grep -q "^make.*: Nothing to be done" || \
+#              make -C $$i ${@:sub=} || { kill $$$$; exit 1; } \
+#          else \
+#	    printf "make[-]: skipping directory $(COLBLK)$$i$(COLNIL)\n" ; fi \
+#	done $(_SUB_CM)
+
+# update dependencies in all our submakes, hopefully this works recursively
 depend::
 	@$(_SUB_CHK)
-	@for i in $(sort $(_SUB_ALLMAKES)) $(SUB_CD) ; do \
-	  if [ -f $$i/$(firstword $(NBMAKEFILE)) ] ; then \
-	    grep -q "\\(headdep.mk\\)\\|\\(sub.mk\\)" $$i/$(firstword $(NBMAKEFILE)) && \
-              { make -kC $$i cleandepend || { kill $$$$; exit 1; } } \
-          else \
-	    printf "make[-]: skipping directory $(COLBLK)$$i$(COLNIL)\n" ; fi \
+	@for i in $(sort $(__SUB_MAKES)) ; do \
+        make -kC $$i depend || printf "depend: cannot update in $(COLMAG)$$i$(COLNIL)\n"; \
 	done $(_SUB_CM)
 
+depend:: cleandepend
 
+# old version
+#depend::
+#	@$(_SUB_CHK)
+#	@for i in $(sort $(_SUB_ALLMAKES)) $(SUB_CD) ; do \
+#	  if [ -f $$i/$(firstword $(NBMAKEFILE)) ] ; then \
+#	    grep -q "\\(headdep.mk\\)\\|\\(sub.mk\\)" $$i/$(firstword $(NBMAKEFILE)) && \
+#              { make -kC $$i cleandepend || { kill $$$$; exit 1; } } || true; \
+#          else \
+#	    printf "make[-]: skipping directory $(COLBLK)$$i$(COLNIL)\n" ; fi \
+#	done $(_SUB_CM)
 
+# generate a lisp command for emacs (that has be evaluated manually)
+emacspath:
+	@$(_SUB_CHK)
+	@echo "(setq compilation-search-path (quote (nil"
+	@for i in $(_SUB_ALLDIRS) ; do \
+	  ( cd $$i || exit 1 ; echo "\""`pwd`"\""; ) \
+        done
+	@echo ")))"
 
-all:: 
+# generate a lisp command for emacs (in a file)
+.sub.el: .sub-cache.d
+	@$(_SUB_CHK)
+	@echo "(setq compilation-search-path (quote (nil" > $@
+	@for i in $(call nsubuniq, $(foreach d, $(shell pwd) \
+	$(_SUB_ALLDIRS) $(_SUB_ALLMAKES) ,$(call cutodir,$d) $d)) ; do \
+	  echo "\"$$i\""; done >> $@
+	@echo ")))" >> $@
+
+all:: .sub.el
 
 clean::
-	rm -f sub.el
-
+	rm -f .sub.el
 
 # show all subdirs
 showsub:
@@ -186,13 +245,15 @@ debugsub:
 	@for i in $(SUB_MAKES) ; do echo $$i; done
 	@printf "$(COLRED)local sub_dirs _____________$(COLNIL)\n"
 	@for i in $(SUB_DIRS) ; do echo $$i; done
-	@printf "$(COLRED)all sub_makes _______________$(COLNIL)\n"
+	@printf "$(COLRED)all sub_makes _______________ (_SUB_ALLMAKES)$(COLNIL)\n"
 	@for i in $(_SUB_ALLMAKES) ; do echo $$i; done
-	@printf "$(COLRED)all sub_dirs ________________$(COLNIL)\n"
+	@printf "$(COLRED)all sub_dirs ________________ (_SUB_ALLDIRS)$(COLNIL)\n"
 	@for i in $(_SUB_ALLDIRS) ; do echo $$i; done
 
 #	@printf "$(COLRED) __SUB_ALLMAKES________________$(COLNIL)\n"
 #	@for i in $(__SUB_ALLMAKES) ; do echo $$i; done
+#	@printf "$(COLRED) __SUB_ALLDIRS_________________$(COLNIL)\n"
+#	@for i in $(__SUB_ALLDIRS) ; do echo $$i; done
 
 #	@printf "$(COLRED)all cvs_dirs ________________$(COLNIL)\n"
 #	@for i in $(_SUB_CVSDIRS) ; do echo $$i; done
@@ -202,6 +263,9 @@ debugsub:
 ##############################################################################
 #  obsolescent: cvs commands on the whole sub-tree
 ##############################################################################
+
+# keep makesupport up to date
+# SUB_DIRS +=	$(NBUILD)/base
 
 cvs:
 	@$(_SUB_CHK)
@@ -260,11 +324,11 @@ tagsub: cvs
 
 ifeq ($(NBUILD_COLOR),yes)
 
-_SUB_CS := 	(sed -u "s/^File.*Patch$$/ยง[01;35m&ยง[00m/;s/^File.*Modified$$/ยง[01;34m&ยง[00m/;s/^File.*Merge$$/ยง[01;31m&ยง[00m/;s/^File.*merge$$/ยง[01;31m&ยง[00m/" | tr "ยง" "\033")
+_SUB_CS := 	(sed -u "s/^File.*Patch$$/ง[01;35m&ง[00m/;s/^File.*Modified$$/ง[01;34m&ง[00m/;s/^File.*Merge$$/ง[01;31m&ง[00m/;s/^File.*merge$$/ง[01;31m&ง[00m/" | tr "ง" "\033")
 
-_SUB_CU :=	(sed -u "s/^M .*/ยง[01;34m&ยง[00m/;s/^P .*/ยง[01;35m&ยง[00m/;s/^U .*/ยง[01;35m&ยง[00m/;" | tr "ยง" "\033")
+_SUB_CU :=	(sed -u "s/^M .*/ง[01;34m&ง[00m/;s/^P .*/ง[01;35m&ง[00m/;s/^U .*/ง[01;35m&ง[00m/;" | tr "ง" "\033")
 
-_SUB_CM :=	| (sed -u "s/^\\(make...: Entering directory\\)\\(.*\\)$$/\\1ยง[01;38m\2ยง[00m/;" | tr "ยง" "\033")
+_SUB_CM :=	| (sed -u "s/^\\(make...: Entering directory\\)\\(.*\\)$$/\\1ง[01;38m\2ง[00m/;" | tr "ง" "\033")
 
 else
 
@@ -273,17 +337,32 @@ _SUB_CU :=	cat
 
 endif
 
+
+##############################################################################
+# generate standalone makefile
+##############################################################################
+
+file::
+	@echo -e "##sub\n\nallsub:"
+	@for i in $(_SUB_ALLMAKES) $(SUB_CD) ; do \
+	  if [ -f $$i/$(firstword $(NBMAKEFILE)) ] ; then \
+              echo -e "\t"make -C $$i all 2>&1 $(_SUBH) ; \
+			  [ $${PIPESTATUS} = 0 ] || { kill $$$$; exit 1; }\
+	  fi ; \
+	done $(_SUB_CM)
+	@echo -e "\ncleansub:"
+	@for i in $(_SUB_ALLMAKES) $(SUB_CD) ; do \
+	  if [ -f $$i/$(firstword $(NBMAKEFILE)) ] ; then \
+              echo -e "\t"make -C $$i clean 2>&1 $(_SUBH) ; \
+			  [ $${PIPESTATUS} = 0 ] || { kill $$$$; exit 1; }\
+	  fi ; \
+	done $(_SUB_CM)
+	@echo
+
+
 ##############################################################################
 # variables used by other make packages
 ##############################################################################
-
-# apply some standard targets on all SUB_MAKES
-purgesub:
-	@$(_SUB_CHK)
-	@for i in $(_SUB_ALLMAKES) $(SUB_CD) ; do \
-	  printf "make[-]: purge directory $$i\n" ; \
-	  rm -f $$i/.*.d ; \
-	done $(_SUB_CM)
 
 TIDY_WILDS +=	.*.d
 

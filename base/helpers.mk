@@ -21,9 +21,8 @@ _HELPERS_MK =	true
 _EMPTY :=
 _SPACE :=	$(_EMPTY) $(_EMPTY)
 
-# must be expanded for if main MF includes other MFs, i.e. ../BUILD.mk
-#
-NBMAKEFILE ?=	Makefile
+# must be adapted if main MF includes other MFs
+NBMAKEFILE ?=	Makefile $(wildcard ../BUILD.mk)
 
 # object dir prefix
 ODP ?=		o-
@@ -36,7 +35,7 @@ cutlast =	$(wordlist 1,$(words $(wordlist 2,$(words $(1)),$(1))),$(1))
 # create an include dir from a lib name, i.e. remove the last directory and
 # any o-* elements in the path
 #
-incdir =	$(subst $(_SPACE),,$(call cutlast,$(call cutlast,\
+incdir =	$(subst $(_SPACE),,$(call cutlast, $(call cutlast, \
 			$(patsubst /$(ODP)%,,$(subst /, /,$(dir $(1)))))))
 
 # remove the o- part of a path
@@ -45,11 +44,9 @@ cutodir =	$(subst $(_SPACE),,$(patsubst /$(ODP)%,,$(subst /, /,$(1))))
 
 # make names of .o files from supported suffices
 #
-_src2obj =	$(strip $(foreach suf, s S c cpp cc C cl,\
-			$(patsubst %.$(suf),%-$(suf).o,$(filter %.$(suf),$(1)))))
-
-_src2obj2 =	$(strip $(foreach suf, s S c cpp cc C cl,\
-			$(patsubst %.$(suf),%-$(suf).obj,$(filter %.$(suf),$(1)))))
+OBJ_SEP ?=	-
+_src2obj =	$(strip $(foreach suf, s S c cpp cc C mc ms,\
+			$(patsubst %.$(suf),%$(OBJ_SEP)$(suf).o,$(filter %.$(suf),$(1)))))
 
 # remove duplicates starting from the right (for libs)
 #
@@ -135,79 +132,60 @@ debugpath2rel:
 NBTOP =		$(shell while [ ! -d tools ] && [ `pwd` != /home ] ; \
 		do cd .. ; done ; pwd)
 
+ifeq ($(NBUILD_PLATFORM),windows)
+cygpathm = $(shell echo $(1) | sed 's|/cygdrive/\(.\)|\1:|g')
+else
+cygpathm = $(1)
+endif
+
 ##############################################################################
 # pattern rules for o-dirs
 ##############################################################################
 
-%-c.o: %.c
-	$(COMPILE.c) $(OUTPUT_OPTION) $< $(ERRORFILT)
+%$(OBJ_SEP)c.o: %.c
+	$(COMPILE.c) $(OUTPUT_OPTION) $(INPUT_OPTION.c)$< $(ERRORFILT)
 
-%-c.o: ../%.c
-	$(COMPILE.c) $(OUTPUT_OPTION) $< $(ERRORFILT)
+%$(OBJ_SEP)c.o: ../%.c
+	$(COMPILE.c) $(OUTPUT_OPTION) $(INPUT_OPTION.c)$< $(ERRORFILT)
 
-%-S.o: %.S
+%$(OBJ_SEP)S.o: %.S
 	$(COMPILE.S) $(OUTPUT_OPTION) $< $(ERRORFILT)
 
-%-S.o: ../%.S
+%$(OBJ_SEP)S.o: ../%.S
 	$(COMPILE.S) $(OUTPUT_OPTION) $< $(ERRORFILT)
 
-%-s.o: %.s
+%$(OBJ_SEP)s.o: %.s
 	$(COMPILE.s) $(OUTPUT_OPTION) $< $(ERRORFILT)
 
-%-s.o: ../%.s
+%$(OBJ_SEP)s.o: ../%.s
 	$(COMPILE.s) $(OUTPUT_OPTION) $< $(ERRORFILT)
 
-%-cpp.o: %.cpp
-	$(COMPILE.cpp) $(OUTPUT_OPTION) $< $(ERRORFILT)
+%$(OBJ_SEP)ms.o: %.ms
+	$(NBQ)$(TOOLS)/nmex/nmex $(NMEXOPTS) -n -t metas $< $*-tmp.s
+	$(COMPILE.s) $(OUTPUT_OPTION) $*-tmp.s $(ERRORFILT)
 
-%-cpp.o: ../%.cpp
-	$(COMPILE.cpp) $(OUTPUT_OPTION) $< $(ERRORFILT)
+%$(OBJ_SEP)ms.o: ../%.ms
+	$(NBQ)$(TOOLS)/nmex/nmex $(NMEXOPTS) -n -t metas $< $*-tmp.s
+	$(COMPILE.s) $(OUTPUT_OPTION) $*-tmp.s $(ERRORFILT)
+
+%$(OBJ_SEP)cpp.o: %.cpp
+	$(COMPILE.cpp) $(OUTPUT_OPTION) $(INPUT_OPTION.cpp)$< $(ERRORFILT)
+
+%$(OBJ_SEP)cpp.o: ../%.cpp
+	$(COMPILE.cpp) $(OUTPUT_OPTION) $(INPUT_OPTION.cpp)$< $(ERRORFILT)
 
 # reusing COMPILE.cpp for alternative suffices
-%-cc.o: %.cc
-	$(COMPILE.cpp) $(OUTPUT_OPTION) $< $(ERRORFILT)
+%$(OBJ_SEP)cc.o: %.cc
+	$(COMPILE.cpp) $(OUTPUT_OPTION) $(INPUT_OPTION.cpp)$< $(ERRORFILT)
 
-%-cc.o: ../%.cc
-	$(COMPILE.cpp) $(OUTPUT_OPTION) $< $(ERRORFILT)
+%$(OBJ_SEP)cc.o: ../%.cc
+	$(COMPILE.cpp) $(OUTPUT_OPTION) $(INPUT_OPTION.cpp)$< $(ERRORFILT)
 
-%-C.o: %.C
-	$(COMPILE.cpp) $(OUTPUT_OPTION) $< $(ERRORFILT)
+%$(OBJ_SEP)C.o: %.C
+	$(COMPILE.cpp) $(OUTPUT_OPTION) $(INPUT_OPTION.cpp)$< $(ERRORFILT)
 
-%-C.o: ../%.C
-	$(COMPILE.cpp) $(OUTPUT_OPTION) $< $(ERRORFILT)
-
-%-cl.o: %.cl
-	$(COMPILE.cpp) $(OUTPUT_OPTION) $< $(ERRORFILT)
-
-%-cl.o: ../%.cl
-	$(COMPILE.cl) $(OUTPUT_OPTION) $< $(ERRORFILT)
-
-
-# In case object files are created with _src2obj2 for duplicate compilation 
-# of same source file with two different compilers
-%-c.obj: %.c
-	$(COMPILE.c) $(OUTPUT_OPTION) $< $(ERRORFILT)
-
-%-c.obj: ../%.c
-	$(COMPILE.c) $(OUTPUT_OPTION) $< $(ERRORFILT)
-
-%-S.obj: %.S
-	$(COMPILE.S) $(OUTPUT_OPTION) $< $(ERRORFILT)
-
-%-S.obj: ../%.S
-	$(COMPILE.S) $(OUTPUT_OPTION) $< $(ERRORFILT)
-
-%-s.obj: %.s
-	$(COMPILE.s) $(OUTPUT_OPTION) $< $(ERRORFILT)
-
-%-s.obj: ../%.s
-	$(COMPILE.s) $(OUTPUT_OPTION) $< $(ERRORFILT)
-
-%-cpp.obj: %.cpp
-	$(COMPILE.cpp) $(OUTPUT_OPTION) $< $(ERRORFILT)
-
-%-cpp.obj: ../%.cpp
-	$(COMPILE.cpp) $(OUTPUT_OPTION) $< $(ERRORFILT)
+%$(OBJ_SEP)C.o: ../%.C
+	$(COMPILE.cpp) $(OUTPUT_OPTION) $(INPUT_OPTION.cpp)$< $(ERRORFILT)
 
 # create (outlying) o-dir
 $(ODP)%:
